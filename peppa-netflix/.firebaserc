@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "jaga-netflix",
+    "fresh_test": "jaga-netflix-fresh"
+  },
+  "targets": {},
+  "etags": {}
+}
