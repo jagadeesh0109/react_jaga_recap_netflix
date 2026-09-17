@@ -1,16 +1,50 @@
 import React, { useRef, useState } from "react";
 import Header from "./Header";
 import { checkValidateData } from "../utils/validate";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import {auth} from "../utils/firebase"
 
 const Login = () => {
   const [isSignInForm, setSignInForm] = useState(true);
   const [errorMessage, seterrorMessage] = useState(null);
-  const email = useRef();
+  const email = useRef();  //like viewchild in angular
+  const password = useRef()
 
   const handleButtonClick = () => {
     // validate the form data
     const message = checkValidateData(email.current.value);
     seterrorMessage(message);
+    if (message) return;
+
+    if (!isSignInForm) {
+      //sign up logic
+
+      createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
+        .then((userCredential) => {
+          const user = userCredential.user;
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          seterrorMessage(errorCode+ "-" +errorMessage)
+          
+        });
+    } else {
+      // sign in logic
+signInWithEmailAndPassword(auth,  email.current.value, password.current.value)
+  .then((userCredential) => {
+    // Signed in 
+    const user = userCredential.user;
+    console.log("sugnin-",user)
+    // ...
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    seterrorMessage(errorCode+ "-" +errorMessage)
+  });
+
+    }
   };
 
   const toggleSignInForm = () => {
@@ -49,6 +83,7 @@ const Login = () => {
         />
         <input
           type="password"
+          ref={password}
           placeholder="Enter Password"
           className="p-4 my-4 w-full bg-gray-700"
         />
