@@ -3,7 +3,6 @@ import Header from "./Header";
 import { checkValidateData } from "../utils/validate";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import {auth} from "../utils/firebase"
-import { useNavigate } from "react-router-dom";
 import { updateProfile } from "firebase/auth";
 import logo from "../asserts/lucia-macedo-4gyYf1ItdHI-unsplash.jpg"
 import { useDispatch } from "react-redux";
@@ -15,7 +14,6 @@ const Login = () => {
   const email = useRef();  //like viewchild in angular
   const password = useRef()
   const name = useRef();
-  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleButtonClick = () => {
@@ -43,7 +41,6 @@ const Login = () => {
               // Profile updated!
               const {uid, email, displayName, photoURL} = auth.currentUser;
               dispatch(addUser({uid: uid, email:email, displayName:displayName, photoURL:photoURL}))
-              navigate("/browse");
               // ...
             })
             .catch((error) => {
@@ -67,7 +64,6 @@ const Login = () => {
         .then((userCredential) => {
           // Signed in
           const user = userCredential.user;
-          navigate("/browse");
           // ...
         })
         .catch((error) => {
