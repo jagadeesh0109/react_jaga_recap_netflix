@@ -3,12 +3,20 @@ import Header from "./Header";
 import { checkValidateData } from "../utils/validate";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import {auth} from "../utils/firebase"
+import { useNavigate } from "react-router-dom";
+import { updateProfile } from "firebase/auth";
+import logo from "../asserts/lucia-macedo-4gyYf1ItdHI-unsplash.jpg"
+import { useDispatch } from "react-redux";
+import {addUser} from "../utils/userSlice"
 
 const Login = () => {
   const [isSignInForm, setSignInForm] = useState(true);
   const [errorMessage, seterrorMessage] = useState(null);
   const email = useRef();  //like viewchild in angular
   const password = useRef()
+  const name = useRef();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleButtonClick = () => {
     // validate the form data
@@ -19,31 +27,54 @@ const Login = () => {
     if (!isSignInForm) {
       //sign up logic
 
-      createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
+      createUserWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value,
+      )
         .then((userCredential) => {
+          // eslint-disable-next-line
           const user = userCredential.user;
+          updateProfile(user, {
+            displayName: name.current.value,
+            photoURL: logo,
+          })
+            .then(() => {
+              // Profile updated!
+              const {uid, email, displayName, photoURL} = auth.currentUser;
+              dispatch(addUser({uid: uid, email:email, displayName:displayName, photoURL:photoURL}))
+              navigate("/browse");
+              // ...
+            })
+            .catch((error) => {
+              // An error occurred
+              seterrorMessage(error.message);
+              // ...
+            });
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
-          seterrorMessage(errorCode+ "-" +errorMessage)
-          
+          seterrorMessage(errorCode + "-" + errorMessage);
         });
     } else {
       // sign in logic
-signInWithEmailAndPassword(auth,  email.current.value, password.current.value)
-  .then((userCredential) => {
-    // Signed in 
-    const user = userCredential.user;
-    console.log("sugnin-",user)
-    // ...
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-    seterrorMessage(errorCode+ "-" +errorMessage)
-  });
-
+      signInWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value,
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          navigate("/browse");
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          seterrorMessage(errorCode + "-" + errorMessage);
+        });
     }
   };
 
@@ -71,6 +102,7 @@ signInWithEmailAndPassword(auth,  email.current.value, password.current.value)
         {!isSignInForm && (
           <input
             type="text"
+            ref={name}
             placeHolder="Enter Full Name"
             className="p-4 my-4 w-full bg-gray-700"
           />
